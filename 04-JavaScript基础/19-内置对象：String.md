@@ -1,7 +1,9 @@
+JS中所有用单引号或者双引号抱起来的都是字符串，每一个字符串是由零到多个字符组成的。
+字符串是基本数据类型，字符串的每一次操作都是值直接地进行操作，不像数组一样是基于空间地址来操作的，所以不存在原有字符串是否改变这一说，肯定都是不变的。
 
 ## 前言
 
-> 在日常开发中，String对象的使用频率是非常高的。所以有必要详细介绍。
+> 在日常开发中，String对象的使用频率是非常高的。所以有必要详细介绍。通过String.prototype查看方法
 
 ### 基本数据类型不能绑定属性和方法
 
@@ -15,6 +17,8 @@
     str.aaa = 12;
     console.log(typeof str);  //打印结果为：string
     console.log(str.aaa);     //打印结果为：undefined
+    但是：
+    str.length 是可以的，因为临时转换成了对象，把str，详见之后的面向对象
 ```
 
 上方代码中，当我们尝试打印`str.aaa`的时候，会发现打印结果为：undefined。也就是说，不能给 `string` 绑定属性和方法。
@@ -73,6 +77,11 @@
 解释：字符串中第一个字符的下标是 0。如果参数 index 不在 [0, string.length) 之间，该方法将返回一个空字符串。
 
 而且，这里的 `str.charAt(index)`和`str[index]`的效果是一样的。
+它们的区别在于如果获取一个不存在的索引
+```
+str[100];   =>undefined
+str.charAt(100)  =>""
+```
 
 **代码举例**：
 
@@ -92,7 +101,7 @@
 
 ### charCodeAt()
 
-`charCodeAt`：返回字符串指定位置的字符的 Unicode 编码。不会修改原字符串。
+`charCodeAt`：返回字符串指定位置的字符的 Unicode 编码。不会修改原字符串。ASCII表里面的十进制编码
 
 语法：
 
@@ -358,6 +367,7 @@
 ### replace()
 
 `replace()`：将字符串中的指定内容，替换为新的内容并返回。不会修改原字符串。
+在不是用正则的情况下，如果原字符串有多个相同的部分，每执行一次replace只能替换一个。
 
 语法：
 
@@ -484,12 +494,92 @@
 
 ![](http://img.smyhvae.com/20180202_1540.png)
 
-## 我的公众号
+## 真实项目需求
+1. 时间字符串格式化
+> 有一个时间字符串"2018-4-4 16:26:8",怎么基于这个字符串获取到"04月04日 16时26分"
 
-想学习**代码之外的技能**？不妨关注我的微信公众号：**千古壹号**（id：`qianguyihao`）。
+```
+function addZero(val){
+	return val < 10 ? '0' + val: val;
+}
 
-扫一扫，你将发现另一个全新的世界，而这将是一场美丽的意外：
+var str = '2018-4-4 16:32:8'
+var ary = str.split(''),
+	aryLeft = ary[0].split('-'),
+	aryRight = ary[1].split(':');
+var month = addZero(aryLeft[1]),
+	day = addZero(aryLeft[2]),
+	hour = addZero(aryRight[0]),
+	minute = addZero(aryRight[1]);
+var result = month+'月'+day+'日' +hour+'时'+minute+'分';
+//或者用正则表达式
+str.split(/(?:-| |:)/g)
 
-![](http://img.smyhvae.com/20190101.png)
+或者更厉害的超级处理代码：
+~function(pro){
+  pro.formatTime = function (template){
+  	template = template || '{0}年{1}月{2}日 {3}时{4}分{5}秒';
+	var ary = this.match(/\d+/g);
+	template = template.replace(/\{(\d+)\g,function() {
+	var n = arguments[1],
+	val = ary[n] || '0';
+	val < 10 ? val = '0' + val:null;
+	return val;
+	});
+	return template;
+	}
+}(String.prototype);
+```
 
+## URL地址问好传参解析
+https://sports.qq.com/kbsweb/game.htm?mid=100000:54444221
+https://sports.qq.com/kbsweb/game.htm?mid=100000:54444219
 
+> 有一个URL地址:"http://www.zhufengpeixun.cn/stu/?lx=1&name=AA&sex=man#teacher"地址问号后面的内容是我们需要解析出来的参数信息
+#后面的成为哈希值，这个值可能有可能没有，我们需要处理，有的话我们截取的时候需要过滤掉
+需要做的是：
+以&进行拆分（数组）
+遍历数组中的每一项，把每一项在按照=进行拆分，把拆分后的第一项作为对象的属性名，第二项作为属性值进行存储即可
+```
+var str = "http://www.zhufengpeixun.cn/stu/?lx=1&name=AA&sex=man#teacher"
+var indexASK = str.indexOf('?');
+var indexWell = str.indexOf('#')
+if(indexWell>-1) //表示有#的时候
+{
+  str = str.substring(indexASK + 1, indexWell);
+}
+else
+{
+  str = str.substr(indexASK+1);
+}
+var  ary = str.split('&'),
+	obj = {};
+for(var i=0;i<ary.length;i++)
+{
+var item = ary[i],
+itemAry = item.split('=');
+var key = itemAry[0],
+    value = itemAry[1];
+  obj[key] = value;
+}
+console.log(obj);
+
+//真正项目的时候是怎么做的？
+~function  (pro){
+	pro.queryURLParameter = function(){
+	var obj ={},
+	reg = /([^?=&#]+)(?:=([?=&#]+)?)/g;
+	this.replace(reg,function(){
+	var key = arguments[1],
+	    value = arguments[2] || null;
+	 ovj[key] = value;
+	});
+	return obj;
+   }
+}(String.prototype);
+
+var str = 'http://www.zhufengpeixun.cn/stu/?lx=1&name=&sex#teacher';
+console.log(str.queryURLParameter());
+
+	
+```
