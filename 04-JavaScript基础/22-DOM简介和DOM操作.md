@@ -729,6 +729,76 @@ innerHTML在JS是双向功能：获取对象的内容 或 向对象插入内容�
         </body>
   </html>
 ```
+## 兼容处理
+需求一：获取当前元素的所有元素子节点
+> 基于children不兼容IE低版本浏览器（会把注释当作元素节点）
+```
+/*
+*标准注释： 包含方法描述、参数、返回值和作者
+children: get all the element nodes of the current element
+
+@parameter
+	curEle: [objet] current element
+		
+@return 
+	[Array] all the element nodes
+	
+by team on 2018/04/07 12:36
+*/
+
+function children(curEle){
+//1.首先获取当前元素下所有的子节点，然后遍历这些子节点，筛选出元素节点（NODE-TYPE === 1）,把筛选出来的结果单独存储起来即可
+var nodeList = curEle.childNodes,
+	result = [];
+for (var i=0; i< nodeList.length; i++)
+{
+var item = nodeList[i];
+if(item.nodeType === 1)
+{
+result.push(item);
+}
+}
+return result;
+}
+console.log(children(course));
+```
+需求二：获取当前元素的上一个哥哥元素节点
+> previousSibling: 上一个哥哥节点
+> previousElementSibling:上一个哥哥元素节点，但是不兼容
+```
+/*
+* prev: get the last elder brother element node of the current element
+* @parameter
+*	curEle: [object] current element
+* @return 
+*	[object] last elder brother element
+* by team on 2018/04/07 12:44
+*/
+```
+
+function prev(curEle)
+{
+// 先找当前元素的哥哥节点，看是否为元素节点，不是的话，基于哥哥找哥哥的上一个哥哥节点，一直找到元素节点或者已经没有哥哥了，则结束查找
+var pre = curEle.previousSibling;
+while (pre&&pre.nodeType !==1)
+{
+// pre是验证有没有， pre.nodeType是验证是否为元素
+pre = pre.previousSibling;
+}
+return pre;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
