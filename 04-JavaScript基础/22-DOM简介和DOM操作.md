@@ -29,8 +29,22 @@ JavaScript基础分为三个部分：
 - 属性节点（属性）：元素的属性。
 
 - 文本节点（文本）：HTML标签中的文本内容（包括标签之间的空格、换行）。
+- 注释节点： 注释内容
 
 节点的类型不同，属性和方法也都不尽相同。所有的节点都是Object。
+每一种类型的节点都会有一些属性区分自己的特性和特征 
+- nodeType: 节点类型
+- nodeName: 节点名称
+- nodeValue: 节点值
+
+元素节点： nodeType:1  nodeName:大写标签名  nodeValue: null
+文本节点： nodeType:3 nodeName:'#text' nodeValue: 文本内容
+注释节点： nodeType:8 nodeName: '#common' nodeValue: 注释内容
+文档节点： nodeType:9 nodeName: '#document' nodeValue:null 
+
+
+
+
 
 ### 什么是DOM
 
@@ -42,6 +56,7 @@ DOM就是由节点组成的。
 HTML加载完毕，渲染引擎会在内存中把HTML文档，生成一个DOM树，getElementById是获取内中DOM上的元素节点。然后操作的时候修改的是该元素的**属性**。
 
 **DOM树**：（一切都是节点）
+当浏览器加载HTML页面的时候，首先就是DOM结构的计算，计算出来的DOM结构就是DOM树
 
 DOM的数据结构如下：
 
@@ -71,10 +86,43 @@ DOM节点的获取方式其实就是**获取事件源的方式**。关于事件�
 
 ```javascript
 var div1 = document.getElementById("box1"); //方式一：通过 id 获取 一个 元素节点（为什么是一个呢？因为 id 是唯一的）
+//如果id不唯一，只能获得第一个id的值
 
 var arr1 = document.getElementsByTagName("div"); //方式二：通过 标签名 获取 元素节点数组，所以有s
+//在指定的上下文中，根据标签名获取到一组元素集合(HTMLCollection)，获取的元素集合是一个类数组（不能直接地使用数组中的方法)
+//能获取到所有后代的标签，不仅仅是儿子级的
+//获得的是一个集合，那怕只有一项，如果想操作具体标签，还需要通过索引获取到。第一种方法获得的才直接 是标签
 
 var arr2 = document.getElementsByClassName("hehe"); //方式三：通过 类名 获取 元素节点数组，所以有s
+
+[context].querySelector()/querySelectorAll() 在指定的上下文中基于选择器（类似于CSS选择器）获取到指定的元素对象（获取的是一个元素，哪怕选择器匹配了多个，我们只获取第一个.
+
+document.head
+ducument.body
+document.documentElement
+
+需求：获取浏览器一屏幕的宽度和高度
+document.documentElement.clientWidth || document.body.clientWidth
+
+document.documentElement.clientHeight || document.body.clientHeight
+
+面试题：获取当前页面所有id为HAHA的元素，不能用querySelectorAll
+思路：1.首先获取当前文档中所有的HTML标签
+2.依次遍历这些元素标签对象，谁的ID等于HAHA就存储起来
+function queryAllById(id)
+{
+ var nodeList = document.getElementsByTagName('*');
+ 
+ var ary = [];
+ for(var i = 0;i<nodeList.length;i++){
+ var item = nodeList[i];
+ item.id === id?ary.push(item):null;
+ }
+ return ary;
+}
+console.log(queryAllById('HAHA'));
+高级方法：console.log(HAHA);  //在JS里面浏览器会自动把元素的id设置为变量，而且ID重复，获取的结果就是一个集合，包含所有ID项，
+不重复就是一个元素对象（类似于ById获取的结果）；
 ```
 
 既然方式二、方式三获取的是标签数组，那么习惯性是**先遍历之后再使用**。
@@ -93,7 +141,7 @@ DOM的节点并不是孤立的，因此可以通过DOM节点之间的相对关�
 
 ![](http://img.smyhvae.com/20180126_2140.png)
 
-节点的访问关系，是以**属性**的方式存在的。
+描述节点之间关系的属性，节点的访问关系，是以**属性**的方式存在的。
 
 JS中的**父子兄**访问关系：
 
@@ -107,6 +155,31 @@ JS中的**父子兄**访问关系：
 
 ```javascript
 	节点.parentNode
+```
+
+### 获取所有的子节点
+
+（1）**childNodes**：标准属性。返回的是指定元素的**子节点**的集合（包括元素节点、所有属性、文本节点）。是W3C的亲儿子。
+
+- 火狐 谷歌等高本版会把换行也看做是子节点。
+
+用法：
+
+```javascript
+	子节点数组 = 父节点.childNodes;   //获取所有节点。
+```
+
+（2）**children**：非标准属性。返回的是指定元素的**子元素节点**的集合。【重要】
+
+- 它只返回HTML节点，甚至不返回文本节点。
+- 在IE6/7/8中包含注释节点（在IE678中，注释节点不要写在里面）。
+
+虽然不是标准的DOM属性，但它和innerHTML方法一样，得到了几乎所有浏览器的支持。
+
+用法：（**用的最多**）
+
+```javascript
+	子节点数组 = 父节点.children;   //获取所有节点。用的最多。
 ```
 
 ### 获取兄弟节点
@@ -195,30 +268,6 @@ JS中的**父子兄**访问关系：
 	最后一个子元素节点 = 节点.lastElementChild || 节点.lastChild
 ```
 
-### 获取所有的子节点
-
-（1）**childNodes**：标准属性。返回的是指定元素的**子节点**的集合（包括元素节点、所有属性、文本节点）。是W3C的亲儿子。
-
-- 火狐 谷歌等高本版会把换行也看做是子节点。
-
-用法：
-
-```javascript
-	子节点数组 = 父节点.childNodes;   //获取所有节点。
-```
-
-（2）**children**：非标准属性。返回的是指定元素的**子元素节点**的集合。【重要】
-
-- 它只返回HTML节点，甚至不返回文本节点。
-- 在IE6/7/8中包含注释节点（在IE678中，注释节点不要写在里面）。
-
-虽然不是标准的DOM属性，但它和innerHTML方法一样，得到了几乎所有浏览器的支持。
-
-用法：（**用的最多**）
-
-```javascript
-	子节点数组 = 父节点.children;   //获取所有节点。用的最多。
-```
 
 ## DOM节点的操作（重要）
 
@@ -638,14 +687,48 @@ onload 事件会在整个页面加载完成之后才触发。为 window 绑定�
 
 ## DOM 操作：设置元素的样式
 
+## innerHTML作用和用法
+innerHTML在JS是双向功能：获取对象的内容 或 向对象插入内容；
+如：<div id="aa">这是内容</div>
 
-## 我的公众号
-
-想学习**代码之外的技能**？不妨关注我的微信公众号：**千古壹号**（id：`qianguyihao`）。
-
-扫一扫，你将发现另一个全新的世界，而这将是一场美丽的意外：
-
-![](http://img.smyhvae.com/20190101.png)
+我们可以通过 document.getElementById(‘aa’).innerHTML 来获取id为aa的对象的内嵌内容；
+也可以对某对象插入内容，如 document.getElementById(‘abc’).innerHTML=’这是被插入的内容’;
+这样就能向id为abc的对象插入内容。
+实例：
+1.获取段落p的 innerHTML（html内容）
+```
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+        <script type="text/javascript">
+            function getInnerHTML(){
+                alert(document.getElementById("test").innerHTML);
+            }
+        </script>
+    </head>
+    <body>
+        <p id="test"><font color="#000">嗨豆壳 www.hi-docs.com</font></p>
+        <input type="button" onclick="getInnerHTML()" value="点击" />
+    </body>
+ </html>
+```
+2.设置段落p的 innerHTML（html内容）
+```
+<html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+            <script type="text/javascript">
+            function setInnerHTML(){
+                document.getElementById("test").innerHTML = "<strong>设置标签的html内容</strong>";
+            }
+            </script>
+            </head>
+        <body>
+            <p id="test"><font color="#000">嗨豆壳 www.hi-docs.com</font></p>
+            <input type="button" onclick="setInnerHTML()" value="点击" />
+        </body>
+  </html>
+```
 
 
 
