@@ -37,10 +37,10 @@ JavaScript基础分为三个部分：
 - nodeName: 节点名称
 - nodeValue: 节点值
 
-元素节点： nodeType:1  nodeName:大写标签名  nodeValue: null
-文本节点： nodeType:3 nodeName:'#text' nodeValue: 文本内容
-注释节点： nodeType:8 nodeName: '#common' nodeValue: 注释内容
-文档节点： nodeType:9 nodeName: '#document' nodeValue:null 
+元素节点： nodeType:1  nodeName:大写标签名  nodeValue: null。
+文本节点： nodeType:3 nodeName:'#text' nodeValue: 文本内容。
+注释节点： nodeType:8 nodeName: '#common' nodeValue: 注释内容。
+文档节点： nodeType:9 nodeName: '#document' nodeValue:null 。
 
 
 
