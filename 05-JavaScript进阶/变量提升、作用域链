@@ -17,7 +17,6 @@ var a = 12;
 
 在ES3/ES5语法规范中，只有全局作用域和函数执行的私有作用域（栈内存），其它大括号不会形成栈内存。
 
-## 变量提升有什么用？
 
 ## 加var和不加var的区别
 ```
@@ -98,14 +97,14 @@ sum();
 ## 条件判断下的变量提升
 ```
 //**在当前作用域下，不管条件是否成立都要进行变量提升**
-// 带vard的还是只声明
+// 带var的还是只声明
 //带function的在老版本浏览器渲染机制下，声明+定义都处理，但是为了迎合ES6的块作用域，
 //新版本浏览器对于在条件判断中的函数，不管条件是否成立，都只是先声明，没有定义
 
 console.log(fn);  //=>undefined
 if(1 === 1)
 {
-  console.log(fn); //这就是坑的地方，这个也是函数本身,就算上面的条件判断不成力（1===2），这里也是
+  console.log(fn); //这就是坑的地方，这个也是函数本身,就算上面的条件判断不成立（1===2），所以现在更严谨了
   function fn(){
     console.log('ok');
   }
@@ -113,7 +112,29 @@ if(1 === 1)
 console.log(fn);  //=>函数本身
 
 ```
+## 变量提升的时候重名问题的处理
+```
+var fn = 12;
+function fn(){
+}
+//这两个名字能重复吗？
+//通过一个机制来理解：在全局作用域下声明的变量都相当于给window加了个属性，而对象的属性名不能重复
+//所以这算是重名了，其实就是一个fn，只不过存储的值的类型不一样
 
+举例：
+fn();
+function fn() {console.log(1);}
+fn();
+function fn() {console.log(2);}
+fn();
+var fn = 100;  //这里fn已经不是一个函数了，所以报错
+fn();
+function fn() {console.log(3);}
+fn();
+function fn() {console.log(4);}
+//最后的结果是4,4,4,报错
+//流程是：变量提升，所以所有的函数声明加定义，所以函数输出是4，然后第4个已经不是函数了所以报错
+```
 
 
 
@@ -134,11 +155,58 @@ moveBy()、moveTo()：移动窗口
 resizeBy()、resizeTo()：调整窗口大小
 scrollBy()、scrollTo()：滚动窗口中网页的内容
 
+# let创建的变量不存在变量提升
+在ES6中基于let/const等方式创建变量或者函数，不存在变量提升机制
+在相同的作用域中，基于let不能声明相同名字的变量（不管用什么方式在当前作用域下声明了变量，再次使用let创建都会报错
+虽然没有变量提升机制，但是在当前作用域代码自上而下执行之前，浏览器会做一个重复性检测（语法检测）：自上而下查找当前
+作用域下所有变量，一旦发现有重复的，直接抛出异常，代码也不会再执行了（虽然没有把变量提前声明定义，但是浏览器已经记住了，当前
+作用域下有哪些变量）
+```
+console.log(a)；//Uncaught ReferenceError
+let a = 12;
+console.log(window.a);  //=>undefined  也就是说这个切断了全局变量和window属性的映射机制
+console.log(a);  //=>12
+```
 
+# 暂时性死区
+```
+/*
+var a = 12;
+if (true) {
+    console.log(a);//=>Uncaught ReferenceError: a is not defined
+    let a = 13;//=>基于LET创建变量，会把大部分{}当做一个私有的块级作用域（类似于函数的私有作用域），
+    //在这里也是重新检测语法规范，看一下是否是基于新语法创建的变量，如果是按照新语法规范来解析
+}
+*/
 
+/*
+// console.log(a);//=>Uncaught ReferenceError: a is not defined
+console.log(typeof a);//=>"undefined" 在原有浏览器渲染机制下,基于typeof等逻辑运算符检测一个未被声明过的变量，不会报错，返回UNDEFINED
+*/
 
+// console.log(a);//=>Uncaught ReferenceError: a is not defined
+console.log(typeof a);//=>Uncaught ReferenceError: a is not defined
+let a;//=>如果当前变量是基于ES6语法处理，在没有声明这个变量的时候，使用TYPEOF检测会直接报错，不会是UNDEFINED，解决了原有的JS的死区
+```
+# 全局变量和私有变量
+```
+var a=12,
+    b=13,
+    c=14;
+    
+function fn(a){
+    console.log(a,b,c);  //=>12,13,14 正确答案：12,undefined,14(c是全局的)
+    var b=c=a=20;  //b变量提升了，c和a作用域链向上级查找
+    console.log(a,b,c);  //=>20,20,20
+}
+fn(a);
+console.log(a,b,c);  //=>12,13,14  正确答案：12,13,20
+```
+```
+var ary = [12,23];
 
-
+function
+```
 
 
 
