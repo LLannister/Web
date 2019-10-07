@@ -1,0 +1,154 @@
+
+```
+var a = 12;
+//先声明一个变量a,没有赋值（默认值是undefined)。
+//在当前作用域中开辟一个位置存储12这个值
+//让变量a和12关联在一起
+```
+# 变量提升机制
+> 当栈内存（作用域）形成，JS代码自上而下执行之前，浏览器首先会把所有带
+"var"/"function"关键词的进行提前声明或定义，这种预先处理机制称之为”变量提升“
+
+变量提升只发生在当前作用域（例如：开始加载页面的时候只对全局作用域下的进行提升，因为此时函数中存储的都是字符串而已）
+在
+
+浏览器很懒，做过的事情不会重复执行第二遍，当代码执行遇到创建函数这部分代码后，直接跳过即可（因为在提升阶段就已经完成函数的赋值操作了),
+会直接执行函数，同样的函数的私有栈内存形成后，也是先进行变量提升，每个栈内存形成后都是先进行变量提升。
+
+在ES3/ES5语法规范中，只有全局作用域和函数执行的私有作用域（栈内存），其它大括号不会形成栈内存。
+
+## 变量提升有什么用？
+
+## 加var和不加var的区别
+```
+console.log(a);  //=>undefined因为变量提升
+console.log(window.a);  //->undefined  
+console.log('a' in window);  //=>true （in:检测某个属性是否隶属于这个对象。）说明window是有a这个属性的，所以在变量提升阶段已经把a当作属性给window了只不过还没赋值是undefined
+var a = 12;
+console.log(a);  //=>12
+console.log(window.a);   //=>12  因为在全局作用域下声明一个变量也相当于给window全局对象设置了一个属性，
+//变量的值就是属性值，私有作用域下的私有变量和window就没啥关系
+
+a = 13;
+console.log(window.a); //=>13
+
+window.a = 14;
+console.log(a); //=>14  全局变量和window中的属性存在“映射机制”
+
+//不带var的区别
+console.log(a);  //=>Uncaught ReferenceError: a is not defined
+console.log('a' in window);  //=>false
+a = 12;    //window.a = 12  不加var其实就是给window加了一个变量a
+console.log(a);  //=>12
+console.log(window.a);  //=>12
+
+var a = b = 12; //这样写b是不带var的，var a = 13; b= 13;
+
+变量提升机制：
+console.log(a,b);
+var a =12,
+    b = 12;
+  
+funciton fn(){
+  console.log(a,b); //=>undefined
+  var a = b = 13;  //这个b是不带var，所以这里是把全局变量b赋值了13，然后私有作用域里面带var和不带var的区别：
+  //私有作用域中带var的是私有变量，不带var的向上级作用域查找，如果不是会一直找到window。
+  //我们把这种查找机制叫做：“作用域链”。也就是说我们在私有作用域中操作的这个非私有变量（不带var）,是一直操作别人的
+  console.log(a,b);  //=>13 13
+}
+
+fn();
+console.log(a,b);  //=>12 13
+```
+## 作用域链的扩展
+```
+function fn(){
+b =13;  //这里一直往上级作用域找，都没有，找到了window，如果找到window也没有这个变量，相当于给window设置了一个属性b
+console.log(b); //=>13
+}
+
+fn();
+console.log(b); //=>13
+```
+## 变量提升的更多细节
+```
+/*
+变量提升：
+var fn;
+sum = AAAFFF111;
+*/
+sum();  //这个是可以执行的，因为变量提升了
+fn();   //这个是不行的，因为只有等号左边提升了，fn的右边还是undefined
+
+//匿名函数值函数表达式，把函数当作值赋值给变量
+var fn = function(){
+console.log(1);
+};
+function sum()
+{
+console.log(2);
+}
+
+fn();  //都可以执行
+sum();
+
+//所以真实项目中，用函数表达式更好，更严谨
+```
+
+## 条件判断下的变量提升
+```
+//**在当前作用域下，不管条件是否成立都要进行变量提升**
+// 带vard的还是只声明
+//带function的在老版本浏览器渲染机制下，声明+定义都处理，但是为了迎合ES6的块作用域，
+//新版本浏览器对于在条件判断中的函数，不管条件是否成立，都只是先声明，没有定义
+
+console.log(fn);  //=>undefined
+if(1 === 1)
+{
+  console.log(fn); //这就是坑的地方，这个也是函数本身,就算上面的条件判断不成力（1===2），这里也是
+  function fn(){
+    console.log('ok');
+  }
+}
+console.log(fn);  //=>函数本身
+
+```
+
+
+
+
+## window 对象表示浏览器窗口
+- 所有JavaScript 全局对象、函数以及变量均自动成为 window 对象的成员
+https://blog.csdn.net/qq_26765193/article/details/83350656
+ 常用属性
+document：窗口中显示的 HTML 文档对象
+history：浏览过窗口的历史记录
+location：窗口文件地址
+name：窗口名称
+opener：打开当前窗口的 window 对象
+ 常用方法
+alert()、confirm、prompt()：对话框
+close()、open()：关闭、打开窗口
+focus()、blur()：窗口获得焦点或者失去焦点
+moveBy()、moveTo()：移动窗口
+resizeBy()、resizeTo()：调整窗口大小
+scrollBy()、scrollTo()：滚动窗口中网页的内容
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
