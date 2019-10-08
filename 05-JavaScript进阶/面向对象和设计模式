@@ -1,0 +1,23 @@
+单例设计模式(singleton pattern)
+1.表现形式
+var obj = {
+xxx:xxx,
+...
+};
+在单例设计模型中，obj不仅仅是对象名，它还被称为命名空间
+
+2.作用
+把描述同一件事物的属性和特征放到同一个堆内存空间中，因此避免了全局变量之间的冲突
+
+
+```
+//高级单例模式
+
+var nameSpace = (function () {
+
+function fn(){
+}
+return {
+      fn:fn
+})();
+```
